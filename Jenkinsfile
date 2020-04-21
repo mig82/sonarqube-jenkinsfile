@@ -38,6 +38,15 @@ properties([
 			defaultValue: params.SCM_URL?:'',
 			description: 'The URL of the remote SCM repository'
 		),
+		[
+			$class: 'CredentialsParameterDefinition',
+			name: 'SCM_CREDENTIALS',
+			credentialType: 'com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl',
+			defaultValue: params.SCM_CREDENTIALS?:'',
+			description: '',
+			required: true
+		],
+
 
 		//Sonarqube
 		[
@@ -65,6 +74,12 @@ properties([
 pipeline {
 	agent {label "sonarqube"}
 	stages {
+		stage('Checkout') {
+			steps {
+				git credentialsId: params.SCM_CREDENTIALS, url: params.SCM_URL
+				sh 'ls -lA'
+			}
+		}
 		stage('Sonarqube') {
 			steps {
 				withCredentials([string(credentialsId: 'SQ_TOKEN', variable: 'sq_token')]) {
