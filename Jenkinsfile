@@ -63,7 +63,7 @@ properties([
 	])
 ])
 pipeline {
-	agent any
+	agent {label "sonarqube"}
 	stages {
 		stage('Sonarqube') {
 			steps {
