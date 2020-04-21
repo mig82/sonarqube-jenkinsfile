@@ -51,7 +51,15 @@ properties([
 			name: 'SQ_URL',
 			defaultValue: params.SQ_URL?:'',
 			description: 'The URL of the Sonarqube server'
-		)
+		),
+		[
+			$class: 'CredentialsParameterDefinition',
+			name: 'SQ_TOKEN',
+			credentialType: 'org.jenkinsci.plugins.plaincredentials.impl.StringCredentialsImpl',
+			defaultValue: params.SQ_TOKEN?:'',
+			description: "A user's token to run analyses on a project. To generate a token, browse your Sonarqube console to <em>User > My Account > Security</em>.",
+			required: true
+		]
 	])
 ])
 pipeline {
@@ -59,14 +67,16 @@ pipeline {
 	stages {
 		stage('Sonarqube') {
 			steps {
-				sh '''
-					sonar-scanner \
-					-Dsonar.projectBaseDir=. \
-					-Dsonar.projectKey=wallet \
-					-Dsonar.sources=. \
-					-Dsonar.host.url=${params.SQ_URL} \
-					-Dsonar.login=foo
-				'''
+				withCredentials([string(credentialsId: 'SQ_TOKEN', variable: 'sq_token')]) {
+					sh """
+						sonar-scanner \
+						-Dsonar.projectBaseDir=. \
+						-Dsonar.projectKey=wallet \
+						-Dsonar.sources=. \
+						-Dsonar.host.url=${params.SQ_URL} \
+						-Dsonar.login=${sq_token}
+					"""
+				}
 			}
 		}
 	}
